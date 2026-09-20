@@ -1,0 +1,7 @@
+{
+  "blaze_face_short_range.tflite": "b4578f35940bf5a1a655214a1cce5cab13eba73c1297cd78e1a04c2380b0152f",
+  "hand_landmarker.task": "fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1",
+  "yolo11n.pt": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+  "emotion-ferplus-8.onnx": "a2a2ba6a335a3b29c21acb6272f962bd3d47f84952aaffa03b60986e04efa61c",
+  "vosk-model-small-en-us-0.15.zip": "30f26242c4eb449f948e42cb302dd7a686cb29a3423a8367f99ff41780942498"
+}

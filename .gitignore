@@ -1,0 +1,37 @@
+# Python environments, caches, and build outputs
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Downloaded vision weights (keep source code and model manifest)
+*.pt
+*.pth
+*.onnx
+*.tflite
+*.task
+vosk-model*/
+vosk-model*.zip
+
+# Generated diagnostic output
+lighting_inspection.txt
+lighting_off.png
+lighting_on.png
+*.log
+MUJOCO_LOG.TXT
+runs/
+
+# Local secrets and OS/editor state
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.idea/
+.claude/

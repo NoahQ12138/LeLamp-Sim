@@ -1,0 +1,116 @@
+LELAMP SIMULATION: ACTIONS AND STATES
+===================================
+
+Run from LeLamp/:
+  .\.venv\Scripts\python.exe vision_behavior.py
+Quit: press q in the camera window, or close the camera/viewer window.
+Directions refer to the unmirrored camera preview. Motion values are radians.
+
+VISUAL ACTION PRIORITY (highest first)
+PHONE > PEACE > POINT_LEFT/RIGHT/UP/DOWN > HAND > NEW FACE > HAPPY/ANGRY > IDLE
+Higher-priority reactions can interrupt lower-priority movement smoothly.
+A held phone or peace sign suppresses lower-priority events even after its
+own animation finishes. Voice OFF overrides every visual lighting effect.
+
+PHONE
+  Detect a cell phone with YOLO confidence >= 0.50 on two fresh inferences.
+  Wake if dimmed, say "Stop scrolling, please lock in twin."
+  Allow a 0.35-second speech lead-in, shake yaw +/-0.18 for four cycles with
+  0.25-second flashing segments, then return toward neutral over 0.5 seconds.
+  Interrupts current/queued lower-priority speech, including jokes.
+  Five-second cooldown plus disappearance latch; holding it does not repeat.
+
+PEACE
+  Index and middle fingers extended/separated, ring/little fingers curled.
+  Three positive frames confirm. Dance: left, right, up, down, head twist
+  both ways, neutral. Yaw/head +/-0.12; pitch +/-0.10; beats 0.40 seconds.
+  Light stays on unless manually off. No disco music exists in this version.
+  Four-second cooldown plus disappearance latch.
+
+POINT_LEFT / POINT_RIGHT / POINT_UP / POINT_DOWN
+  Index finger extended; middle/ring/little fingers curled. Three positive
+  frames confirm. Diagonals and severely foreshortened fingers are rejected.
+  LEFT: yaw +0.15. RIGHT: yaw -0.15. UP: pitch -0.10. DOWN: pitch +0.10.
+  Smooth move for 0.55 seconds, hold one second, return over 0.60 seconds.
+  One-second per-direction cooldown plus disappearance latch. A new direction
+  waits for the current pointing animation to finish. Conflicting directions
+  from two hands do not select a pointing action.
+
+HAND
+  A visible hand without a recognized peace/pointing gesture.
+  Three frames confirm. Small yaw wiggle +/-0.08, then return to neutral.
+  Four-second cooldown plus disappearance latch.
+
+FACE
+  Newly visible face; three positive frames confirm.
+  Wake if needed, say "Hello there", nod and flash, return to neutral.
+  Pitch sequence +0.12, -0.12, +0.06, neutral; nod segments 0.55 seconds.
+  No repeated greeting while continuously visible. Leave and re-enter to rearm,
+  subject to the four-second cooldown. There is no face identity tracking.
+
+HAPPY
+  FER+ happiness class: probability >= 0.65 and lead over runner-up >= 0.15.
+  Four fresh positive expression inferences confirm; runs after face greeting.
+  Friendly yaw +/-0.06 and upward pitch -0.06, then neutral. No added speech.
+  Five-second cooldown plus expression disappearance latch.
+
+ANGRY
+  FER+ anger probability >= 0.25. Must rank first, or second behind neutral
+  with a gap <= 0.15. Three fresh positives confirm; runs after face greeting.
+  Gentle head tilt +0.08, downward pitch +0.06, light softened to 65%, neutral.
+  Says "You seem angry. Let me lighten up your mood with a joke."
+  Then a randomly selected online joke, ending with "Hahaha".
+  Jokes are prefetched in the background; local backups cover loading/failure.
+  Five-second cooldown plus expression disappearance latch.
+  This is a visible-expression classification, not knowledge of inner emotions.
+  The sensitive threshold can classify some neutral faces as ANGRY.
+
+EXPRESSION UNKNOWN
+  No usable face, an unsupported expression, or insufficient confidence.
+  No expression action. SAD is no longer an action.
+
+VOICE COMMANDS
+  ON: "on", "turn on", "lamp on".
+  OFF: "off", "turn off", "lamp off".
+  Finalized Vosk recognition only; each word confidence >= 0.80.
+  Input is normalized; unrelated/partial speech is ignored.
+  OFF stays off until ON. Visual motion can still happen while manually off.
+  Microphone pauses during lamp speech and briefly afterward to reduce feedback.
+
+LAMP AND BEHAVIOR STATES
+  IDLE: no active motion sequence; neutral control targets.
+  ON: starts enabled at full brightness.
+  DIMMING: after ten seconds without a newly accepted interaction, fades to
+    20% brightness over two seconds. Continuous face presence does not reset it.
+  DIMMED: idle brightness 20%.
+  WAKING: new event restores brightness over 0.6 seconds before visual action.
+  MANUAL OFF: user voice OFF; flashes, idle, and wake cannot enable the light.
+  FLASH OFF: temporary off segment within face/phone reaction, not manual OFF.
+  REACTION SOFTENING: ANGRY light multiplier 65%, restored at completion.
+  PENDING ACTION: waiting for wake or a higher-priority visual condition to clear.
+  COOLDOWN / WAIT FOR LEAVE: visible item already reacted to or cannot rearm yet.
+  ACTIVE: PHONE, PEACE, HAND, FACE, HAPPY, ANGRY, or one of four POINT actions.
+  Light, activity, voice, and motion states are separate and can coexist.
+
+REARMING AND ACTIVITY
+  Five fresh negative detector results clear presence/latch. Skipped inferences
+  do not count. Expressions run every third frame; phone inference every second.
+  New accepted visual actions and accepted voice ON/OFF reset the idle timer.
+
+SYSTEM STATUS / EXIT
+  Camera opening -> loading models -> waiting for frame -> Camera LIVE.
+  Stale camera data (>1 second) cannot trigger new visual events.
+  Voice: loading, listening, paused for speech, disabled, or unavailable.
+  Camera/physics errors stop the run; normal exit returns toward neutral and
+  turns off illumination. A physics error stops stepping rather than animating.
+
+MANUAL TESTS (no camera required)
+  python vision_behavior.py --manual phone
+  Replace phone with peace, hand, face, happy, angry, point_left, point_right,
+  point_up, or point_down. Phone and angry manual tests include speech.
+  Manual tests exit after completion; other manual reactions do not play speech.
+
+VALIDATION
+  Automated geometry, priorities/latches, lighting, speech dispatch, joke fallback,
+  and model control/physics checks are available in verify_*.py.
+  Passing automated tests does not guarantee live gesture/expression accuracy.
