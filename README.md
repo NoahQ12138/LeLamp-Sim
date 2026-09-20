@@ -1,5 +1,7 @@
 # LeLamp-Sim
 
+HTN2026
+
 Windows MuJoCo simulation of Human Computer Lab's LeLamp, with webcam gestures,
 expression reactions, voice commands, speech, online jokes, and idle lighting.
 
